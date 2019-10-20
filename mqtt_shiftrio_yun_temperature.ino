@@ -12,9 +12,10 @@
 #include <MQTT.h>
 #include <math.h>
 
-const int B = 4275;               // B value of the thermistor
-const int R0 = 100000;            // R0 = 100k
-const int pinTempSensor = A0;     // Grove - Temperature Sensor connect to A0
+int a;
+float temperature;
+int B = 3975;                //B value of the thermistor
+float resistance;
 
 BridgeClient net;
 MQTTClient client;
@@ -64,11 +65,9 @@ void loop() {
   if (millis() - lastMillis > 2000) {
     lastMillis = millis();
 
-    int a = analogRead(pinTempSensor);
-    float R = 1023.0 / a - 1.0;
-    R = R0 * R;
-
-    float temperature = 1.0/(log(R/R0)/B+1/298.15)-273.15; // convert to temperature via datasheet
+    int a = analogRead(0);
+    resistance = (float)(1023 - a) * 10000 / a; //get the resistance of the sensor;
+    temperature = 1 / (log(resistance / 10000) / B + 1 / 298.15) - 273.15; //convert to temperature via datasheet&nbsp;;
 
     String topic = "/temperature";
     String payload = "";
