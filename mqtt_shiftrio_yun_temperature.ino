@@ -10,6 +10,11 @@
 #include <Bridge.h>
 #include <BridgeClient.h>
 #include <MQTT.h>
+#include <math.h>
+
+const int B = 4275;               // B value of the thermistor
+const int R0 = 100000;            // R0 = 100k
+const int pinTempSensor = A0;     // Grove - Temperature Sensor connect to A0
 
 BridgeClient net;
 MQTTClient client;
@@ -58,11 +63,16 @@ void loop() {
   // publish a message roughly every second.
   if (millis() - lastMillis > 2000) {
     lastMillis = millis();
-    //client.publish("/hello", "world");
-    //client.publish("/velo", "moto");
+
+    int a = analogRead(pinTempSensor);
+    float R = 1023.0 / a - 1.0;
+    R = R0 * R;
+
+    float temperature = 1.0/(log(R/R0)/B+1/298.15)-273.15; // convert to temperature via datasheet
+
     String topic = "/temperature";
     String payload = "";
-    payload += random(20, 30);
+    payload += temperature;
     digitalWrite(LED_BUILTIN, HIGH);
     client.publish(topic, payload);
     //Serial.println("published: " + topic + " - " + payload);
